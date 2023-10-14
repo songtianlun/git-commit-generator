@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Git Commit Generator</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+    #input-desc {
+      margin-right: 10px;
+    }
+    button {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+<input id="input-desc" type="text" placeholder="输入描述" />
+<button onClick="generateCommit()">生成提交</button>
+<p id="output"></p>
+
+<script>
+  function generateCommit() {
+    var desc = document.getElementById('input-desc').value;
+    var output = "git commit -m '" + desc + "'";
+    document.getElementById('output').innerText = output;
+  }
+</script>
+</body>
+</html>
