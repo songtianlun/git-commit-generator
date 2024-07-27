@@ -1,5 +1,5 @@
 # 第一阶段：构建 Go 程序
-FROM golang:1.20-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
 # 安装必要的构建依赖
 RUN apk add --no-cache git
@@ -20,9 +20,9 @@ RUN go build -o main .
 FROM alpine:latest
 
 # 设置环境变量
-ENV LLM_API_URL=https://one-api.skybyte.me/v1/chat/completions
-ENV LLM_MODEL_NAME=gemini-1.5-flash
-ENV LLM_API_KEY=sk-rLEbROmxDX3MfRq2155e4138BbAb48699e8c6203D492FaE1
+ENV LLM_API_URL=
+ENV LLM_MODEL_NAME=
+ENV LLM_API_KEY=
 
 # 设置工作目录
 WORKDIR /root/
