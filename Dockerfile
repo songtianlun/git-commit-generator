@@ -29,6 +29,7 @@ WORKDIR /root/
 
 # 从 builder 镜像复制编译好的二进制文件到当前工作目录
 COPY --from=builder /app/main .
+COPY --from=builder /app/index.html .
 
 # 运行程序
 CMD ["./main"]
