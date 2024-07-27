@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Commit Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-okaidia.min.css">
+    <style>
+        :root {
+            --primary-color: #4a4a4a;
+            --secondary-color: #3273dc;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --code-background: #272822;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 100px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #2366d1;
+        }
+
+	.result-container {
+            margin-top: 20px;
+            position: relative;
+            display: none; /* 初始隐藏结果容器 */
+        }
+
+        #result {
+            background-color: var(--code-background);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0;
+            padding: 10px; /* 添加内边距 */
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .copy-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="title">Git Commit Generator</h1>
+            <select id="language-select">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+            </select>
+        </div>
+        <form id="commit-form">
+            <label for="description" id="description-label">Description of changes:</label>
+            <textarea id="description" name="description" required></textarea>
+            <button type="submit" id="generate-button">Generate</button>
+        </form>
+	<div class="result-container">
+            <pre><code id="result" class="language-git"></code></pre>
+            <button id="copy-button" class="copy-button">Copy</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-git.min.js"></script>
+    <script>
+        const translations = {
+            en: {
+                title: "Git Commit Generator",
+                descriptionLabel: "Description of changes:",
+                generateButton: "Generate",
+                copyButton: "Copy"
+            },
+            zh: {
+                title: "Git 提交信息生成器",
+                descriptionLabel: "更改描述：",
+                generateButton: "生成",
+                copyButton: "复制"
+            }
+        };
+
+        let currentLanguage = 'en';
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('title').textContent = translations[lang].title;
+            document.getElementById('description-label').textContent = translations[lang].descriptionLabel;
+            document.getElementById('generate-button').textContent = translations[lang].generateButton;
+            document.getElementById('copy-button').textContent = translations[lang].copyButton;
+        }
+
+        document.getElementById('language-select').addEventListener('change', function(e) {
+            setLanguage(e.target.value);
+        });
+
+	document.getElementById('commit-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const description = document.getElementById('description').value;
+            const resultElement = document.getElementById('result');
+            const resultContainer = document.querySelector('.result-container');
+
+            resultElement.textContent = 'Generating...';
+            resultContainer.style.display = 'block'; // 显示结果容器
+
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ description: description }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultElement.textContent = data.commit;
+                Prism.highlightElement(resultElement);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                resultElement.textContent = 'An error occurred while generating the commit message.';
+            });
+        });
+        
+        document.getElementById('copy-button').addEventListener('click', function() {
+            const resultText = document.getElementById('result').textContent;
+            navigator.clipboard.writeText(resultText).then(function() {
+                alert('Copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        });
+
+	document.querySelector('.result-container').style.display = 'none';
+
+        // Set initial language
+        setLanguage('en');
+    </script>
+</body>
+</html>
