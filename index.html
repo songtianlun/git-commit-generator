@@ -87,108 +87,95 @@
             background-color: #2366d1;
         }
 
-	
-	.result-container {
+
+
+        .result-container {
             margin-top: 20px;
             position: relative;
-            display: none;
+            max-height: 500px; /* 设置一个最大高度 */
+            overflow-y: auto; /* 如果内容超过最大高度，添加垂直滚动条 */
         }
-        
+
         #result {
-            background-color: #272822;
-            border-radius: 4px;
-            overflow: hidden;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-family: monospace; /* 使用等宽字体 */
             margin: 0;
-            padding: 1em;
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-            font-size: 1em;
-            text-align: left;
-            white-space: pre;
-            word-spacing: normal;
-            word-break: normal;
-            word-wrap: normal;
             line-height: 1.5;
         }
-        
+
         .error-message {
             color: #ff0000;
             font-weight: bold;
         }
-        
+
         /* PrismJS toolbar styles */
         div.code-toolbar > .toolbar {
             top: .3em;
             right: .2em;
             opacity: 1;
         }
-        
+
         div.code-toolbar > .toolbar button {
             background: rgba(224, 224, 224, 0.2);
             color: #bbb;
             padding: 0.3em 0.5em;
             border-radius: 0.3em;
         }
-        
+
         div.code-toolbar > .toolbar button:hover,
         div.code-toolbar > .toolbar button:focus {
             background: rgba(224, 224, 224, 0.4);
             color: #fff;
         }
 
-	.copy-button {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 10px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        
-        .copy-button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
 
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
+       @media (max-width: 600px) {
+           body {
+               padding: 10px;
+           }
 
-            .container {
-                padding: 15px;
-            }
-        }
+           .container {
+               padding: 15px;
+           }
+       }
 
-	.ad-container {
-            margin: 20px 0;
-            text-align: center;
-            overflow: hidden;
-        }
-        
-        @media (max-width: 600px) {
-            .ad-container {
-                margin: 10px 0;
-            }
-        }
-
-	footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #888;
+        #char-count {
+            display: block;
+            text-align: right;
             font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
         }
-        
-        footer a {
-            color: #888;
-            text-decoration: none;
-        }
-        
-        footer a:hover {
-            text-decoration: underline;
-        }
+
+	    .ad-container {
+                margin: 20px 0;
+                text-align: center;
+                overflow: hidden;
+            }
+
+            @media (max-width: 600px) {
+                .ad-container {
+                    margin: 10px 0;
+                }
+            }
+
+	    footer {
+                text-align: center;
+                margin-top: 20px;
+                color: #888;
+                font-size: 0.8em;
+            }
+
+            footer a {
+                color: #888;
+                text-decoration: none;
+            }
+
+            footer a:hover {
+                text-decoration: underline;
+            }
     </style>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-4EZ0XFP9TP"></script>
@@ -212,12 +199,15 @@
         </div>
         <form id="commit-form">
             <label for="description" id="description-label">Description of changes:</label>
-            <textarea id="description" name="description" required></textarea>
+            <textarea id="description" name="description" required maxlength="100"></textarea>
+            <span id="char-count">0 / 100</span>
             <button type="submit" id="generate-button">Generate</button>
         </form>
-	<div class="result-container">
+        <div id="warning-message" style="display: none; color: red; margin-bottom: 10px;"></div>
+        <div class="result-container">
             <pre><code id="result" class="language-git"></code></pre>
         </div>
+
 
 	<!-- 广告位 1 -->
 	<div class="ad-container">
@@ -243,33 +233,53 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-git.min.js"></script>
     <script>
+
+        const SKYBYTE_URL = 'https://www.frytea.com';
+
         const translations = {
             en: {
                 title: "Git Commit Generator",
-                descriptionLabel: "Description of changes:",
+                descriptionLabel: "Description of changes (max 100 characters):",
                 generateButton: "Generate",
                 copyButton: "Copy",
-                footer: 'Copyright © <a href="https://www.frytea.com" target="_blank" rel="noopener noreferrer">Skybyte</a> All Rights Reserved. <a href="https://www.frytea.com/disclaimer" target="_blank" rel="noopener noreferrer">Disclaimer</a>'
+                footer: `Copyright © <a href="${SKYBYTE_URL}" target="_blank" rel="noopener noreferrer">Skybyte</a> All Rights Reserved. <a href="${SKYBYTE_URL}/disclaimer/" target="_blank" rel="noopener noreferrer">Disclaimer</a>`,
+                charCount: "{current} / 100",
+                warningMessage: "Abnormal result, please check if the description is correct"
             },
             zh: {
                 title: "Git 提交信息生成器",
-                descriptionLabel: "更改描述：",
+                descriptionLabel: "更改描述（最多100个字符）：",
                 generateButton: "生成",
                 copyButton: "复制",
-                footer: 'Copyright © <a href="https://www.frytea.com" target="_blank" rel="noopener noreferrer">Skybyte</a> 保留所有权利. <a href="https://www.frytea.com/disclaimer" target="_blank" rel="noopener noreferrer">免责声明</a>'
+                footer: `Copyright © <a href="${SKYBYTE_URL}" target="_blank" rel="noopener noreferrer">Skybyte</a> 保留所有权利. <a href="${SKYBYTE_URL}/disclaimer/" target="_blank" rel="noopener noreferrer">免责声明</a>`,
+                charCount: "{current} / 100",
+                warningMessage: "结果异常，请检查描述是否正确"
             }
         };
 
-        let currentLanguage = 'en';
+        // 初始隐藏结果容器
+        document.querySelector('.result-container').style.display = 'none';
+        //let currentLanguage = 'en';
+        let currentLanguage = getBrowserLanguage();
 
-        function setLanguage(lang) {
-            currentLanguage = lang;
-            document.getElementById('title').textContent = translations[lang].title;
-            document.getElementById('description-label').textContent = translations[lang].descriptionLabel;
-            document.getElementById('generate-button').textContent = translations[lang].generateButton;
-            document.getElementById('footer').innerHTML = translations[lang].footer;
+        document.getElementById('language-select').addEventListener('change', function(e) {
+            setLanguage(e.target.value);
+        });
+
+        function getBrowserLanguage() {
+            const language = navigator.language || navigator.userLanguage;
+            if (language.startsWith('zh')) {
+                return 'zh';
+            }
+            return 'en';  // 默认为英语
         }
 
+        // 初始化语言设置
+        document.addEventListener('DOMContentLoaded', function() {
+            setLanguage(currentLanguage);
+        });
+
+        // 语言选择事件监听器
         document.getElementById('language-select').addEventListener('change', function(e) {
             setLanguage(e.target.value);
         });
@@ -283,14 +293,37 @@
             ]);
         }
 
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('title').textContent = translations[lang].title;
+            document.getElementById('description-label').textContent = translations[lang].descriptionLabel;
+            document.getElementById('generate-button').textContent = translations[lang].generateButton;
+            document.getElementById('footer').innerHTML = translations[lang].footer;
+            updateCharCount();
+
+            // 更新语言选择下拉菜单
+            document.getElementById('language-select').value = lang;
+        }
+
+        function updateCharCount() {
+            const descriptionElement = document.getElementById('description');
+            const charCountElement = document.getElementById('char-count');
+            const currentCount = descriptionElement.value.length;
+            charCountElement.textContent = translations[currentLanguage].charCount.replace("{current}", currentCount);
+        }
+
+        document.getElementById('description').addEventListener('input', updateCharCount);
+
         document.getElementById('commit-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const description = document.getElementById('description').value;
             const resultElement = document.getElementById('result');
             const resultContainer = document.querySelector('.result-container');
+            const warningElement = document.getElementById('warning-message');
 
             resultElement.textContent = 'Generating...';
             resultContainer.style.display = 'block';
+            warningElement.style.display = 'none';
 
             fetchWithTimeout('/generate', {
                 method: 'POST',
@@ -298,7 +331,7 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ description: description }),
-            }, 5000) // 5秒超时
+            }, 5000)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
@@ -307,11 +340,18 @@
                     if (!data.commit) {
                         throw new Error('Invalid response format');
                     }
-                    // 提取 commit 消息并移除反引号
                     let commitMessage = data.commit.trim().replace(/^```\n?|\n?```$/g, '');
-                    resultElement.textContent = commitMessage;
+
+                    if (commitMessage.length > 100) {
+                        warningElement.textContent = translations[currentLanguage].warningMessage;
+                        warningElement.style.display = 'block';
+                    } else {
+                        warningElement.style.display = 'none';
+                    }
+
+                    resultElement.innerHTML = `<pre>${escapeHtml(commitMessage)}</pre>`;
                     resultElement.classList.remove('error-message');
-                    Prism.highlightElement(resultElement);
+                    Prism.highlightElement(resultElement.querySelector('pre'));
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -321,15 +361,22 @@
                         resultElement.textContent = `Error: ${error.message}`;
                     }
                     resultElement.classList.add('error-message');
+                    warningElement.style.display = 'none';
                     Prism.highlightElement(resultElement);
                 });
         });
 
-        // 初始隐藏结果容器
-        document.querySelector('.result-container').style.display = 'none';
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
 
-        // Set initial language
-        setLanguage('en');
+
+
     </script>
 </body>
 </html>
